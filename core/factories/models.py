@@ -6,7 +6,7 @@ from importlib import import_module
 from typing import Any, TypeVar
 
 from core.enums.model_provider import ModelProvider
-from core.settings import EmbeddingSettings, LlmSettings
+from core.configs.settings import EmbeddingSettings, LlmSettings
 
 
 TModel = TypeVar("TModel")
