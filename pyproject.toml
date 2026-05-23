@@ -1,0 +1,51 @@
+[project]
+name = "sudoer"
+version = "0.0.1"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]",
+    "uvicorn[standard]",
+    "websockets",
+    "typer",
+    "rich",
+    "langgraph",
+    "langchain-core",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-instrumentation-fastapi",
+    "loguru",
+    "pydantic-settings",
+    "pyyaml",
+]
+
+[project.scripts]
+sudoer = "apps.cli.main:run"
+
+[project.optional-dependencies]
+openai = [
+    "langchain-openai",
+]
+gemini = [
+    "langchain-google-genai",
+]
+groq = [
+    "langchain-groq",
+]
+anthropic = [
+    "langchain-anthropic",
+]
+ollama = [
+    "langchain-ollama",
+]
+
+
+
+all = [
+    "langchain-openai",
+    "langchain-google-genai",
+    "langchain-groq",
+    "langchain-anthropic",
+    "langchain-ollama",
+]
