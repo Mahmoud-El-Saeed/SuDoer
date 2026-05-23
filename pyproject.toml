@@ -12,6 +12,7 @@ dependencies = [
     "rich",
     "langgraph",
     "langchain-core",
+    "langchain-openai",
     "opentelemetry-api",
     "opentelemetry-sdk",
     "opentelemetry-instrumentation-fastapi",
@@ -19,9 +20,6 @@ dependencies = [
     "pydantic-settings",
     "pyyaml",
 ]
-
-[project.scripts]
-sudoer = "apps.cli.main:run"
 
 [project.optional-dependencies]
 openai = [
