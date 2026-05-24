@@ -123,7 +123,7 @@ class Settings(BaseSettings):
 
     def path_settings(self) -> PathSettings:
         """Summarize resolved path settings."""
-        file_path = pathlib.Path(__file__).parent.parent.resolve()
+        file_path = pathlib.Path(__file__).parent.parent.parent.resolve()
         data_dir_path = pathlib.Path(file_path, self.data_dir_name).resolve()
         sqlite_path = pathlib.Path(data_dir_path, self.sqlite_path_name).resolve()
         return PathSettings(
