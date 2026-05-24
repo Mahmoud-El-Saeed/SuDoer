@@ -13,6 +13,7 @@ class LlmSettings(BaseModel):
     provider: ModelProvider
     name: str
     base_url: Optional[str] = None
+    api_key: Optional[str] = None
 
 
 class EmbeddingSettings(BaseModel):
@@ -88,6 +89,7 @@ class Settings(BaseSettings):
             provider=self.llm_provider,
             name=model_name,
             base_url=self.llm_base_url,
+            api_key=self.llm_api_key,
         )
 
     def planner_llm_settings(self) -> LlmSettings:
@@ -129,4 +131,3 @@ class Settings(BaseSettings):
             sqlite_path=str(sqlite_path),
             qdrant_url=self.qdrant_url,
         )
-
