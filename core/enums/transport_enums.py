@@ -17,3 +17,4 @@ class ControlAction(str, Enum):
     pong = "pong"
     interrupt = "interrupt"
     resume = "resume"
+    complete = "complete"

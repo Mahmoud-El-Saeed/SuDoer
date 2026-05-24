@@ -29,3 +29,14 @@ class StreamHandler:
             self._console.print(f"[bold red]Error:[/bold red] {detail}")
             return
         self._console.print(f"[dim]Event:[/dim] {message.type.value}")
+
+    def prompt_approval(self, prompt: str) -> bool:
+        """Summarize user approval prompt handling."""
+
+        self._console.print(f"[yellow]Approval required:[/yellow] {prompt}")
+        response = input("Approve? [Y/n]: ").strip().lower()
+        if response in {"", "y", "yes"}:
+            return True
+        if response in {"n", "no"}:
+            return False
+        return False

@@ -6,6 +6,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
 from apps.daemon.services.pty_manager import PtyManager
+from core.enums.transport_enums import ControlAction
 from core.transport.messages import AgentMessage, MessageType
 
 
@@ -16,6 +17,7 @@ async def _recv_loop(
     websocket: WebSocket,
     outgoing: asyncio.Queue[AgentMessage],
     pty_manager: PtyManager,
+    approval: asyncio.Queue[bool],
 ) -> None:
     """Summarize inbound message handling."""
 
@@ -33,7 +35,7 @@ async def _recv_loop(
         if message.type is MessageType.command:
             command = message.payload.get("command")
             if isinstance(command, str) and command.strip():
-                pty_manager.write(command)
+                asyncio.create_task(pty_manager.submit(command, outgoing, approval))
             else:
                 await outgoing.put(
                     AgentMessage(
@@ -42,6 +44,20 @@ async def _recv_loop(
                         payload={"error": "missing_command"},
                     )
                 )
+        elif message.type is MessageType.control:
+            action = message.payload.get("action")
+            approved = message.payload.get("approved")
+            if isinstance(action, str):
+                try:
+                    action_value = ControlAction(action)
+                except ValueError:
+                    continue
+            elif isinstance(action, ControlAction):
+                action_value = action
+            else:
+                continue
+            if action_value is ControlAction.resume and isinstance(approved, bool):
+                await approval.put(approved)
 
 
 async def _send_loop(
@@ -51,23 +67,9 @@ async def _send_loop(
 ) -> None:
     """Summarize outbound message loop."""
 
-    async def _pty_stream() -> None:
-        async for chunk in pty_manager.read_stream():
-            await outgoing.put(
-                AgentMessage(
-                    type=MessageType.output,
-                    payload={"output": chunk.data},
-                )
-            )
-
-    stream_task = asyncio.create_task(_pty_stream())
-    try:
-        while True:
-            message = await outgoing.get()
-            await websocket.send_text(message.model_dump_json())
-    finally:
-        stream_task.cancel()
-        await asyncio.gather(stream_task, return_exceptions=True)
+    while True:
+        message = await outgoing.get()
+        await websocket.send_text(message.model_dump_json())
 
 
 @router.websocket("/ws/agent")
@@ -76,19 +78,13 @@ async def agent_socket(websocket: WebSocket) -> None:
 
     await websocket.accept()
     outgoing: asyncio.Queue[AgentMessage] = asyncio.Queue()
+    approval: asyncio.Queue[bool] = asyncio.Queue()
     pty_manager = PtyManager()
     send_task = asyncio.create_task(_send_loop(websocket, outgoing, pty_manager))
-    recv_task = asyncio.create_task(_recv_loop(websocket, outgoing, pty_manager))
+    recv_task = asyncio.create_task(_recv_loop(websocket, outgoing, pty_manager, approval))
     tasks = {send_task, recv_task}
     try:
-        done, pending = await asyncio.wait(
-            tasks,
-            return_when=asyncio.FIRST_EXCEPTION,
-        )
-        for task in done:
-            exc = task.exception()
-            if exc is not None:
-                raise exc
+        await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
     except WebSocketDisconnect:
         pass
     finally:
@@ -96,3 +92,5 @@ async def agent_socket(websocket: WebSocket) -> None:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
         pty_manager.close()
+        if websocket.client_state.name == "CONNECTED":
+            await websocket.close()
