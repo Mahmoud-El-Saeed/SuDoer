@@ -53,20 +53,30 @@ The orchestrator is a master supervisor graph that routes intent to isolated sub
 - **Advisory Analysis** -- a read-only diagnostic mode that deeply reads system logs, applies LLM-based reasoning, and generates human-readable reports without executing anything.
 
 <p align="center">
-  <img src="images/arch.svg" alt="SuDoer Architecture" width="500">
+  <a href="images/arch.svg" target="_blank">
+    <img src="images/arch.svg" alt="SuDoer Architecture" width="100%">
+  </a>
 </p>
 
+
 <p align="center">
-  <img src="images/master.svg" alt="Master Supervisor Graph" width="500">
+  <a href="images/master.svg" target="_blank">
+    <img src="images/master.svg" alt="Master Supervisor Graph" width="100%">
+  </a>
 </p>
+
 
 <p align="center">
   <em>The master supervisor graph routes intent to the appropriate subgraph based on the user's request type and execution mode.</em>
 </p>
 
+
 <p align="center">
-  <img src="images/subgraphs.svg" alt="Subgraph Architecture" width="700">
+  <a href="images/subgraphs.svg" target="_blank">
+    <img src="images/subgraphs.svg" alt="Subgraph Architecture" width="100%">
+  </a>
 </p>
+
 
 <p align="center">
   <em>Each subgraph is an isolated LangGraph state machine -- Contextualizer gathers system state, the Planner decomposes goals with a feasibility critic, and the Executor runs commands through a security-validated loop with error recovery.</em>
